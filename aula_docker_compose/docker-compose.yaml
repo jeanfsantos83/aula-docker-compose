@@ -1,0 +1,42 @@
+version: "3.9"
+
+networks:
+  wordpress_net:
+    driver: bridge
+
+volumes:
+  mariadb_vol: {}
+  wordpress_vol: {}
+
+services:
+  db:
+    restart: always
+    container_name: db
+    image: mariadb:${MARIADB_TAG}
+    networks:
+      - wordpress_net
+    volumes:
+      - mariadb_vol:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_DB_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+
+  meublog:
+    container_name: meublog
+    image: wordpress:${WORDPRESS_TAG}
+    networks:
+      - wordpress_net
+    volumes:
+      - wordpress_vol:/var/www/html
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${DATABASE_USER}
+      WORDPRESS_DB_PASSWORD: ${DATABASE_PASSWORD}
+      WORDPRESS_DB_NAME: ${DATABASE_DB_NAME}
